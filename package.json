@@ -1,0 +1,18 @@
+{
+  "name": "classnet-app",
+  "version": "1.4.0",
+  "description": "Logiciel de gestion scolaire et d'évaluation autonome - ClassNet par CRYPT",
+  "main": "index.html",
+  "scripts": {
+    "dev": "tauri dev",
+    "build": "tauri build"
+  },
+  "author": "Kahorha Lulem'ansima Gabriel (CRYPT Enterprise)",
+  "license": "MIT",
+  "dependencies": {
+    "@tauri-apps/api": "^1.5.1"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^1.5.9"
+  }
+}
