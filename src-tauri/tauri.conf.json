@@ -2,12 +2,12 @@
   "build": {
     "beforeDevCommand": "",
     "beforeBuildCommand": "",
-    "devPath": "../",
-    "distDir": "../"
+    "devPath": "../dist",
+    "distDir": "../dist"
   },
   "package": {
     "productName": "ClassNet App",
-    "version": "1.4.0"
+    "version": "1.4.5"
   },
   "tauri": {
     "allowlist": {
