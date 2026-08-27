@@ -1,9 +1,10 @@
 {
   "name": "classnet-app",
-  "version": "1.4.0",
+  "version": "1.4.5",
   "description": "Logiciel de gestion scolaire et d'évaluation autonome - ClassNet par CRYPT",
   "main": "index.html",
   "scripts": {
+    "tauri": "tauri",
     "dev": "tauri dev",
     "build": "tauri build"
   },
