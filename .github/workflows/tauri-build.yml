@@ -1,0 +1,48 @@
+name: Build ClassNet Desktop App (Tauri)
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  pull_request:
+
+jobs:
+  build-tauri:
+    permissions:
+      contents: write
+    runs-on: windows-latest
+
+    steps:
+      - name: 1. Checkout du code source
+        uses: actions/checkout@v4
+
+      - name: 2. Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: 3. Installation de Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: x86_64-pc-windows-msvc
+
+      - name: 4. Configuration du cache Rust pour accélérer les builds
+        uses: swatinem/rust-cache@v2
+        with:
+          workspaces: './src-tauri -> target'
+
+      - name: 5. Installation des dépendances NPM
+        run: npm ci
+
+      - name: 6. Build de l'application Tauri (EXE / MSI)
+        uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tagName: v__VERSION__
+          releaseName: 'ClassNet App v__VERSION__'
+          releaseBody: 'Release officielle de ClassNet App compilée via Tauri.'
+          releaseDraft: true
+          prerelease: false
