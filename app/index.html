@@ -186,22 +186,79 @@
         </div>
     </header>
 
-    <!-- MODAL DE CONNEXION -->
+    <!-- MODAL MULTI-VUES AUTHENTIFICATION (CONNEXION & INSCRIPTION OTP) -->
     <div id="login-modal" class="modal-overlay">
         <div class="modal-content">
-            <h3 style="margin-bottom: 15px; color: var(--primary);">Connexion Enseignant</h3>
-            <div class="form-group">
-                <label>IDENTIFIANT UNIQUE OU NOM</label>
-                <input type="text" id="login-id" placeholder="Ex: CN-2026-X8F9 ou Kahorha">
+            
+            <!-- VUE 1 : CONNEXION ENSEIGNANT -->
+            <div id="auth-view-login">
+                <h3 style="margin-bottom: 15px; color: var(--primary);">Connexion Enseignant</h3>
+                <div class="form-group">
+                    <label>ADRESSE E-MAIL DE CONNEXION</label>
+                    <input type="email" id="login-email" placeholder="enseignant@classnet.cd">
+                </div>
+                <div class="form-group">
+                    <label>MOT DE PASSE</label>
+                    <input type="password" id="login-password" placeholder="••••••••">
+                </div>
+                <div style="display: flex; gap: 10px; margin-top: 20px;">
+                    <button class="btn-action" style="flex:1;" onclick="closeLoginModal()">Annuler</button>
+                    <button class="btn-primary" style="flex:1;" onclick="handleLogin()">Valider</button>
+                </div>
+                <div style="text-align: center; margin-top: 15px;">
+                    <a href="#" onclick="switchAuthSubView('register')" style="color: var(--primary); font-size: 0.85rem; text-decoration: underline;">Pas encore de compte ? S'inscrire</a>
+                </div>
             </div>
-            <div class="form-group">
-                <label>MOT DE PASSE</label>
-                <input type="password" id="login-password" placeholder="••••••••">
+
+            <!-- VUE 2 : INSCRIPTION ENSEIGNANT (ÉTAPE 1 - INITIALISATION) -->
+            <div id="auth-view-register" style="display: none;">
+                <h3 style="margin-bottom: 15px; color: var(--primary);">Créer un Compte Enseignant</h3>
+                <div class="form-group">
+                    <label>NOM COMPLET</label>
+                    <input type="text" id="reg-fullname" placeholder="Ex: Gabriel Kahorha">
+                </div>
+                <div class="form-group">
+                    <label>ADRESSE E-MAIL</label>
+                    <input type="email" id="reg-email" placeholder="nom@exemple.com">
+                </div>
+                <div class="form-group">
+                    <label>NUMÉRO DE TÉLÉPHONE</label>
+                    <input type="tel" id="reg-phone" placeholder="0895281304">
+                </div>
+                <div class="form-group">
+                    <label>ÂGE</label>
+                    <input type="number" id="reg-age" placeholder="25" min="18">
+                </div>
+                <div class="form-group">
+                    <label>ÉCOLE / ÉTABLISSEMENT (OPTIONNEL)</label>
+                    <input type="text" id="reg-school" placeholder="Enfant du Monde">
+                </div>
+                <div class="form-group">
+                    <label>MOT DE PASSE</label>
+                    <input type="password" id="reg-password" placeholder="••••••••">
+                </div>
+                <div style="display: flex; gap: 10px; margin-top: 20px;">
+                    <button class="btn-action" style="flex:1;" onclick="switchAuthSubView('login')">Retour</button>
+                    <button class="btn-primary" style="flex:1;" id="btn-send-otp" onclick="handleRegisterInit()">Recevoir le code OTP ⚡</button>
+                </div>
             </div>
-            <div style="display: flex; gap: 10px; margin-top: 20px;">
-                <button class="btn-action" style="flex:1;" onclick="closeLoginModal()">Annuler</button>
-                <button class="btn-primary" style="flex:1;" onclick="handleLogin()">Valider</button>
+
+            <!-- VUE 3 : VÉRIFICATION CODE OTP (ÉTAPE 2 - VALIDATION) -->
+            <div id="auth-view-otp" style="display: none;">
+                <h3 style="margin-bottom: 10px; color: var(--primary);">Vérification de l'E-mail</h3>
+                <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 15px;">
+                    Un code OTP à 6 chiffres a été envoyé à l'adresse <strong id="otp-target-email"></strong>.
+                </p>
+                <div class="form-group">
+                    <label>CODE OTP DE VÉRIFICATION</label>
+                    <input type="text" id="reg-otp-code" placeholder="123456" maxlength="6" style="text-align: center; letter-spacing: 4px; font-weight: bold; font-size: 1.2rem;">
+                </div>
+                <div style="display: flex; gap: 10px; margin-top: 20px;">
+                    <button class="btn-action" style="flex:1;" onclick="switchAuthSubView('register')">Modifier infos</button>
+                    <button class="btn-primary" style="flex:1;" id="btn-verify-otp" onclick="handleRegisterVerify()">Valider mon compte</button>
+                </div>
             </div>
+
         </div>
     </div>
 
@@ -334,8 +391,8 @@
                 </div>
                 <!-- Sélecteur de modèle basé sur la structure ChatPayload -->
                 <select id="llink-model-select" style="padding: 6px 10px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-main); font-size: 0.8rem; font-weight: bold; outline: none;">
-                    <option value="gemini-1.5-flash">✨ Gemini 1.5 Flash</option>
-                    <option value="deepseek-v3">🧠 DeepSeek V3</option>
+                    <option value="gemini-1.5-flash">✨ Standard</option>
+                    <option value="deepseek-v3">🧠 Reflexion</option>
                 </select>
             </div>
 
@@ -411,7 +468,7 @@
             
             <div class="form-group">
                 <label>NOM COMPLET DE L'ENSEIGNANT</label>
-                <input type="text" id="setting-user-name" value="Kahorha Gabriel" onchange="updateProfileInfo()">
+                <input type="text" id="setting-user-name" value="Kahorha Gabriel">
             </div>
 
             <div class="form-group">
@@ -424,13 +481,34 @@
 
             <div class="form-group">
                 <label>ÉTABLISSEMENT / ÉCOLE</label>
-                <input type="text" id="setting-school-id" value="Enfant du Monde - Bukavu" onchange="updateProfileInfo()">
+                <input type="text" id="setting-school-id" value="Enfant du Monde - Bukavu">
             </div>
 
             <div class="form-group">
                 <label>MOT DE PASSE DU COMPTE LOCAL</label>
-                <input type="password" id="setting-user-pass" value="123456" onchange="updateProfileInfo()">
+                <input type="password" id="setting-user-pass" value="123456">
             </div>
+
+            <!-- AJOUTS CRYPT : Téléphone et Âge -->
+            <div class="form-group">
+                <label>NUMÉRO DE TÉLÉPHONE</label>
+                <input type="tel" id="setting-user-phone" placeholder="Ex: 089...">
+            </div>
+
+            <div class="form-group">
+                <label>ÂGE</label>
+                <input type="number" id="setting-user-age" placeholder="Ex: 25">
+            </div>
+
+            <!-- NOUVEAU : Bouton de modification sécurisée -->
+            <button class="btn-primary" style="width: 100%; margin: 15px 0;" onclick="verifyAndSaveProfile()">💾 Modifier mes informations</button>
+
+            <!-- NOUVEAU : ID de l'école -->
+            <div class="form-group">
+                <label>ID DE L'ÉCOLE (Peut être vide si enseignant indépendant)</label>
+                <input type="text" id="setting-school-code" placeholder="Ex: ECOLE-123">
+            </div>
+
         </div>
 
         <div class="card">
@@ -503,20 +581,23 @@ const DB_KEY = 'classnet_app_database_v2';
 const defaultDB = {
     user: {
         id: generateUniqueId("SYS-CRYPT"),
-        name: " ",
+        name: "Gabriel Kahorha",
+        email: "enseignant@classnet.cd",
         password: "admin",
         school: "Enfant du Monde - Bukavu",
         isLoggedIn: false
     },
     classes: [], 
     courses: {},  
-    courseMax: {}, // 👈 AJOUT : Format { "3ème Scientifique_SVT": 100 }
-    periodVisibility: { "P1": true, "P2": false, "EX1": false, "P3": false, "P4": false, "EX2": false }, // 👈 AJOUT : Persistance de l'affichage
-    activeCourseFilter: {}, // 👈 AJOUT : Cours actuellement filtré par classe
+    courseMax: {}, // { "3ème Scientifique_SVT": 20 }
+    periodVisibility: { "P1": true, "P2": false, "EX1": false, "P3": false, "P4": false, "EX2": false },
+    activeCourseFilter: {},
     students: {}, 
     evaluations: {}, 
     grades: {}, 
     presences: [], 
+    quizzes: [],
+    llinkPrefs: "Donne des explications précises adaptées au programme de RDC.",
     pendingCommits: 0
 };
 
@@ -600,23 +681,152 @@ function updateLoginHeaderButton() {
 function openLoginModal() { document.getElementById('login-modal').classList.add('active'); }
 function closeLoginModal() { document.getElementById('login-modal').classList.remove('active'); }
 
-function handleLogin() {
-    const idOrName = document.getElementById('login-id').value.trim();
+/* ==========================================================================
+   AUTHENTIFICATION CLOUD & INSCRIPTION OTP (CLASSNET APP)
+   ========================================================================== */
+
+const CLOUD_AUTH_URL = "https://class-net-p.onrender.com";
+let tempTeacherData = null; // Stocke temporairement les infos avant validation OTP
+
+// Bascule d'affichage dans le modal d'authentification
+function switchAuthSubView(viewName) {
+    document.getElementById('auth-view-login').style.display = viewName === 'login' ? 'block' : 'none';
+    document.getElementById('auth-view-register').style.display = viewName === 'register' ? 'block' : 'none';
+    document.getElementById('auth-view-otp').style.display = viewName === 'otp' ? 'block' : 'none';
+}
+
+// 1. CONNEXION AVEC FUSION DE LA BASE DE DONNÉES REÇUE DU SERVEUR
+async function handleLogin() {
+    const email = document.getElementById('login-email').value.trim();
     const pass = document.getElementById('login-password').value.trim();
 
-    if (!idOrName) { alert("Veuillez entrer votre identifiant ou votre nom."); return; }
+    if (!email || !pass) {
+        alert("⚠️ Veuillez saisir votre e-mail et votre mot de passe.");
+        return;
+    }
 
-    if (pass === db.user.password || pass === "123456") {
-        db.user.isLoggedIn = true;
-        if (idOrName.includes("CN-")) db.user.id = idOrName;
-        else db.user.name = idOrName;
-        
-        saveDB();
-        updateLoginHeaderButton();
-        closeLoginModal();
-        alert(`Connecté avec succès ! Identifiant : ${db.user.id}`);
-    } else {
-        alert("Mot de passe incorrect.");
+    try {
+        const response = await fetch(`${CLOUD_AUTH_URL}/api/auth/teacher/login`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ identifier: email, password: pass })
+        });
+
+        const result = await response.json();
+
+        if (result.status && result.data) {
+            // Fusion de la base reçue avec la base locale
+            db = { ...db, ...result.data };
+            db.user.isLoggedIn = true;
+            saveDB();
+            
+            updateLoginHeaderButton();
+            renderClassSelectors();
+            renderGradesTables();
+            closeLoginModal();
+            alert(`✅ Connexion réussie ! Bienvenue ${db.user.name}`);
+        } else {
+            alert(`❌ Échec de connexion : ${result.message || 'Identifiants incorrects.'}`);
+        }
+    } catch (error) {
+        console.error("Erreur connexion cloud :", error);
+        alert("❌ Impossible de joindre le serveur Cloud. Vérifiez votre connexion Internet.");
+    }
+}
+
+// 2. ÉTAPE 1 : INITIALISATION DE L'INSCRIPTION & ENVOI DU CODE OTP
+async function handleRegisterInit() {
+    const fullName = document.getElementById('reg-fullname').value.trim();
+    const email = document.getElementById('reg-email').value.trim();
+    const phone = document.getElementById('reg-phone').value.trim();
+    const ageVal = parseInt(document.getElementById('reg-age').value);
+    const school = document.getElementById('reg-school').value.trim() || null;
+    const pass = document.getElementById('reg-password').value.trim();
+
+    if (!fullName || !email || !phone || !ageVal || !pass) {
+        alert("⚠️ Veuillez remplir tous les champs obligatoires.");
+        return;
+    }
+
+    tempTeacherData = {
+        full_name: fullName,
+        email: email,
+        school_name: school,
+        password: pass,
+        phone_number: phone,
+        age: ageVal
+    };
+
+    const btn = document.getElementById('btn-send-otp');
+    btn.disabled = true;
+    btn.textContent = "Envoi en cours...";
+
+    try {
+        const response = await fetch(`${CLOUD_AUTH_URL}/api/auth/teacher/init-register`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(tempTeacherData)
+        });
+
+        const result = await response.json();
+
+        if (result.status) {
+            document.getElementById('otp-target-email').textContent = email;
+            switchAuthSubView('otp');
+            alert(`📧 ${result.message}`);
+        } else {
+            alert(`❌ ${result.message}`);
+        }
+    } catch (err) {
+        alert("❌ Erreur de réseau lors de la demande du code OTP.");
+    } finally {
+        btn.disabled = false;
+        btn.textContent = "Recevoir le code OTP ⚡";
+    }
+}
+
+// 3. ÉTAPE 2 : VALIDATION DU CODE OTP & CRÉATION DÉFINITIVE DU COMPTE
+async function handleRegisterVerify() {
+    const otpCode = document.getElementById('reg-otp-code').value.trim();
+
+    if (!otpCode || !tempTeacherData) {
+        alert("⚠️ Veuillez entrer le code OTP à 6 chiffres reçu par mail.");
+        return;
+    }
+
+    const payload = {
+        email: tempTeacherData.email,
+        otp_code: otpCode,
+        teacher_data: tempTeacherData
+    };
+
+    const btn = document.getElementById('btn-verify-otp');
+    btn.disabled = true;
+    btn.textContent = "Vérification...";
+
+    try {
+        const response = await fetch(`${CLOUD_AUTH_URL}/api/auth/teacher/verify-register`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+
+        const result = await response.json();
+
+        if (result.status) {
+            alert("🎉 " + result.message);
+            // Pré-remplissage des champs de connexion
+            document.getElementById('login-email').value = tempTeacherData.email;
+            document.getElementById('login-password').value = tempTeacherData.password;
+            switchAuthSubView('login');
+        } else {
+            alert(`❌ ${result.message}`);
+        }
+    } catch (err) {
+        alert("❌ Erreur de vérification du code OTP.");
+    } finally {
+        btn.disabled = false;
+        btn.textContent = "Valider mon compte";
     }
 }
 
@@ -634,6 +844,7 @@ document.getElementById('btn-login-header').addEventListener('click', () => {
 
 function updateProfileInfo() {
     db.user.name = document.getElementById('setting-user-name').value;
+    db.user.email = document.getElementById('setting-user-email').value; // Ajout
     db.user.password = document.getElementById('setting-user-pass').value;
     db.user.school = document.getElementById('setting-school-id').value;
     saveDB();
@@ -645,23 +856,24 @@ function updateProfileInfo() {
    ========================================================================== */
 function promptAddClass() {
     const className = prompt("Entrez le nom de la nouvelle classe (ex: 3ème Scientifique) :");
-    if (!className || className.trim() === "") return;
+    if (!className || !className.trim()) return;
+    const cleanClass = className.trim();
 
-    // Demande immédiatement le cours associé lors de la création
-    const courseName = prompt(`Entrez le cours associé à la classe "${className.trim()}" (ex: SVT, Mathématiques, Chimie) :`, "SVT");
-    if (!courseName || courseName.trim() === "") return;
-
-    const cleanName = className.trim();
+    const courseName = prompt(`Entrez le premier cours pour "${cleanClass}" (ex: SVT, Chimie) :`, "SVT");
+    if (!courseName || !courseName.trim()) return;
     const cleanCourse = courseName.trim();
 
-    if (!db.classes.includes(cleanName)) {
-        db.classes.push(cleanName);
-        db.courses[cleanName] = [cleanCourse]; // Associe directement le cours saisi
-        db.students[cleanName] = [];
-        db.evaluations[cleanName] = {
-            "P1": [], "P2": [], "EX1": [], "P3": [], "P4": [], "EX2": []
-        };
-        activeClass = cleanName;
+    const maxBulletin = prompt(`Maximum sur le bulletin pour "${cleanCourse}" en Période (ex: 10, 20, 50, 100) :`, "20");
+    const cleanMax = (!maxBulletin || isNaN(maxBulletin)) ? 20 : parseFloat(maxBulletin);
+
+    if (!db.classes.includes(cleanClass)) {
+        db.classes.push(cleanClass);
+        db.courses[cleanClass] = [cleanCourse];
+        if (!db.courseMax) db.courseMax = {};
+        db.courseMax[`${cleanClass}_${cleanCourse}`] = cleanMax;
+        db.students[cleanClass] = [];
+        db.evaluations[cleanClass] = { "P1": [], "P2": [], "EX1": [], "P3": [], "P4": [], "EX2": [] };
+        activeClass = cleanClass;
         saveDB();
         renderClassSelectors();
         renderGradesTables();
@@ -839,7 +1051,16 @@ function renderGradesTables() {
     const selectedCourse = (db.activeCourseFilter && db.activeCourseFilter[activeClass]) || classCourses[0] || '';
     const maxBulletin = (db.courseMax && db.courseMax[`${activeClass}_${selectedCourse}`]) || 100;
 
-    // 2. Recherche élève
+    // 2. Boutons d'action rapides (Édition des élèves & Fiche Récapitulative)
+    const toolbarHTML = `
+        <div class="card" style="margin-bottom: 12px; display: flex; gap: 10px; flex-wrap: wrap;">
+            <button class="btn-action" style="flex:1;" onclick="openEditStudentsModal()">✏️ Éditer la liste des élèves</button>
+            <button class="btn-secondary" style="flex:1;" onclick="renderCourseSummarySheet()">📊 Fiche Récapitulative des Moyennes</button>
+        </div>
+    `;
+    container.innerHTML += toolbarHTML;
+
+    // 3. Recherche élève
     const searchInput = document.getElementById('grades-filter-search');
     const searchTerm = searchInput ? searchInput.value.toLowerCase().trim() : '';
     const students = db.students[activeClass] || [];
@@ -851,11 +1072,12 @@ function renderGradesTables() {
         const card = document.createElement('div');
         card.className = "card";
 
-        // Filtrage des évaluations uniquement pour le cours sélectionné
+        const isExam = pKey.startsWith("EX");
+        const currentMaxBulletin = isExam ? maxBulletin * 2 : maxBulletin;
+
         const allEvals = (db.evaluations[activeClass] && db.evaluations[activeClass][pKey]) ? db.evaluations[activeClass][pKey] : [];
         const evals = allEvals.filter(ev => !ev.course || ev.course === selectedCourse);
 
-        // Récupération de l'état masqué/affiché
         const isVisible = (db.periodVisibility && db.periodVisibility[pKey]) ? 'block' : 'none';
 
         let tableHTML = `
@@ -871,14 +1093,15 @@ function renderGradesTables() {
                         <tr>
                             <th>Nom de l'Élève</th>`;
         
+        // 📅 Affichage conditionnel de la date sous le titre du devoir
         evals.forEach(ev => {
-            tableHTML += `<th style="text-align:center;">${ev.name}<br><small>/${ev.max}</small></th>`;
+            const dateBadge = ev.date ? `<br><small style="color:var(--text-muted); font-weight:normal; font-size:0.75rem;">📅 ${ev.date}</small>` : '';
+            tableHTML += `<th style="text-align:center;">${ev.name}${dateBadge}<br><small style="color:var(--primary); font-weight:bold;">/${ev.max}</small></th>`;
         });
 
-        // Colonnes Total et Moyenne ramenée au Max Bulletin
         tableHTML += `
             <th style="text-align:center;">Total</th>
-            <th style="text-align:center; color: var(--success);">Moyenne (/${maxBulletin})</th>
+            <th style="text-align:center; color: var(--success);">Moyenne (/${currentMaxBulletin})</th>
         </tr></thead><tbody>`;
 
         if (filteredStudents.length === 0) {
@@ -894,9 +1117,28 @@ function renderGradesTables() {
                     const gradeKey = `${st.id}_${ev.id}`;
                     const gradeVal = db.grades[gradeKey] !== undefined ? db.grades[gradeKey] : '';
                     
+                    let inputStyle = "width: 50px; text-align: center; border: 1px solid var(--border-color); border-radius: 4px; padding: 4px; font-weight: bold;";
+
                     if (gradeVal !== '') {
-                        total += parseFloat(gradeVal);
-                        maxTotal += parseFloat(ev.max);
+                        const numVal = parseFloat(gradeVal);
+                        const maxVal = parseFloat(ev.max);
+
+                        // 🔴 CAS 1 : Note supérieure au max
+                        if (numVal > maxVal) {
+                            inputStyle += " background-color: #FEE2E2; color: #DC2626; border-color: #EF4444;";
+                        } 
+                        // 🟠 CAS 2 : Note inférieure à la moyenne
+                        else if (numVal < (maxVal / 2)) {
+                            inputStyle += " background-color: #FEF3C7; color: #D97706; border-color: #F59E0B;";
+                            total += numVal;
+                            maxTotal += maxVal;
+                        } 
+                        // 🟢 CAS 3 : Note valide et >= moyenne
+                        else {
+                            inputStyle += " background-color: #DCFCE7; color: #15803D; border-color: #22C55E;";
+                            total += numVal;
+                            maxTotal += maxVal;
+                        }
                     }
 
                     tableHTML += `
@@ -905,17 +1147,16 @@ function renderGradesTables() {
                                    value="${gradeVal}" 
                                    placeholder="-" 
                                    min="0" max="${ev.max}"
-                                   style="width: 50px; text-align: center; border: 1px solid var(--border-color); border-radius: 4px; padding: 4px;"
+                                   style="${inputStyle}"
                                    onchange="updateGrade('${st.id}', '${ev.id}', this.value, ${ev.max})">
                         </td>`;
                 });
 
-                // Calcul de la moyenne ramenée sur le max du bulletin
-                const moyenneBulletin = maxTotal > 0 ? ((total / maxTotal) * maxBulletin).toFixed(1) : "0.0";
+                const moyenneBulletin = maxTotal > 0 ? ((total / maxTotal) * currentMaxBulletin).toFixed(1) : "0.0";
 
                 tableHTML += `
                     <td style="text-align:center; font-weight:bold; color:var(--primary);">${total}/${maxTotal}</td>
-                    <td style="text-align:center; font-weight:bold; color:var(--success);">${moyenneBulletin} / ${maxBulletin}</td>
+                    <td style="text-align:center; font-weight:bold; color:var(--success);">${moyenneBulletin} / ${currentMaxBulletin}</td>
                 </tr>`;
             });
         }
@@ -929,6 +1170,238 @@ function renderGradesTables() {
         card.innerHTML = tableHTML;
         container.appendChild(card);
     });
+
+    // 4. Génération automatique du conteneur de la fiche récapitulative
+    const summaryContainer = document.createElement('div');
+    summaryContainer.id = 'course-summary-sheet-container';
+    container.appendChild(summaryContainer);
+}
+
+/* ==========================================================================
+   MODULE D'ÉDITION DES ÉLÈVES (RECHERCHE & MODIFICATION EN TEMPS RÉEL)
+   ========================================================================== */
+
+function openEditStudentsModal() {
+    let modal = document.getElementById('edit-students-modal');
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'edit-students-modal';
+        modal.className = 'modal-overlay';
+        modal.innerHTML = `
+            <div class="modal-content" style="max-width: 500px; width: 95%;">
+                <h3 style="margin-bottom: 12px; color: var(--primary);">✏️ Édition de la Classe</h3>
+                
+                <!-- NOUVEAU : Édition de la classe et des cours -->
+                <div class="form-group">
+                    <label>NOM DE LA CLASSE</label>
+                    <div style="display: flex; gap: 8px;">
+                        <input type="text" id="edit-class-name" value="${activeClass}">
+                        <button class="btn-primary" onclick="updateActiveClassName()">Renommer</button>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>COURS (Séparés par des virgules)</label>
+                    <div style="display: flex; gap: 8px;">
+                        <input type="text" id="edit-class-courses" value="${(db.courses[activeClass] || []).join(', ')}">
+                        <button class="btn-primary" onclick="updateActiveClassCourses()">Mettre à jour</button>
+                    </div>
+                </div>
+                
+                <hr style="border: 0; border-top: 1px dashed var(--border-color); margin: 15px 0;">
+
+                <div class="form-group">
+                    <label>🔍 RECHERCHER UN ÉLÈVE DANS LA LISTE</label>
+                    <input type="text" id="edit-student-search" placeholder="Filtrer par nom..." oninput="renderEditStudentsList()">
+                </div>
+                <div id="edit-students-list" style="max-height: 300px; overflow-y: auto; margin-bottom: 15px;"></div>
+                <div style="display: flex; justify-content: flex-end;">
+                    <button class="btn-primary" onclick="closeEditStudentsModal()">Fermer & Actualiser</button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modal);
+    }
+    modal.classList.add('active');
+    renderEditStudentsList();
+}
+
+function closeEditStudentsModal() {
+    const modal = document.getElementById('edit-students-modal');
+    if (modal) modal.classList.remove('active');
+    renderGradesTables();
+    renderAttendanceList();
+}
+
+function renderEditStudentsList() {
+    const container = document.getElementById('edit-students-list');
+    const searchTerm = (document.getElementById('edit-student-search')?.value || '').toLowerCase().trim();
+    const students = db.students[activeClass] || [];
+
+    const filtered = students.filter(st => st.name.toLowerCase().includes(searchTerm));
+
+    if (filtered.length === 0) {
+        container.innerHTML = '<p class="empty-state">Aucun élève trouvé.</p>';
+        return;
+    }
+
+    let html = '<table style="width:100%;"><tbody>';
+    filtered.forEach((st, index) => {
+        html += `
+            <tr>
+                <td style="padding: 4px;">
+                    <input type="text" value="${st.name}" 
+                           style="width: 100%; padding: 6px; border-radius: 6px; border: 1px solid var(--border-color);"
+                           onchange="updateStudentName('${st.id}', this.value)">
+                </td>
+                <td style="width: 40px; text-align: center;">
+                    <button onclick="removeStudent('${st.id}')" style="background:none; border:none; cursor:pointer;" title="Supprimer cet élève">🗑️</button>
+                </td>
+            </tr>
+        `;
+    });
+    html += '</tbody></table>';
+    container.innerHTML = html;
+}
+
+function updateStudentName(studentId, newName) {
+    if (!newName.trim()) return;
+    const student = (db.students[activeClass] || []).find(s => s.id === studentId);
+    if (student) {
+        student.name = newName.trim();
+        saveDB();
+    }
+}
+
+function removeStudent(studentId) {
+    if (confirm("⚠️ Voulez-vous vraiment supprimer cet élève de la classe ?")) {
+        db.students[activeClass] = db.students[activeClass].filter(s => s.id !== studentId);
+        saveDB();
+        renderEditStudentsList();
+    }
+}
+
+/* ==========================================================================
+   MODULE FICHE RÉCAPITULATIVE DES MOYENNES DU COURS
+   ========================================================================== */
+
+function renderCourseSummarySheet() {
+    const container = document.getElementById('course-summary-sheet-container');
+    if (!container) return;
+
+    const classCourses = db.courses[activeClass] || [];
+    const selectedCourse = (db.activeCourseFilter && db.activeCourseFilter[activeClass]) || classCourses[0] || '';
+    const maxBulletin = (db.courseMax && db.courseMax[`${activeClass}_${selectedCourse}`]) || 100;
+    const students = db.students[activeClass] || [];
+    const periods = ["P1", "P2", "EX1", "P3", "P4", "EX2"];
+
+    // Constantes pour les maximas conformément aux normes pédagogiques
+    const maxSM1 = maxBulletin * 4;
+    const maxSM2 = maxBulletin * 4;
+    const maxAnnuel = maxSM1 + maxSM2; // Soit 8 * maxBulletin
+
+    let html = `
+        <div class="card" style="margin-top: 20px; border: 2px solid var(--primary);">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                <h3 style="color: var(--primary);">📊 Fiche Récapitulative : ${selectedCourse} (${activeClass})</h3>
+                <button class="btn-action" onclick="document.getElementById('course-summary-sheet-container').innerHTML=''">✖ Masquer</button>
+            </div>
+            <div style="overflow-x: auto;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>N°</th>
+                            <th>Nom & Prénom</th>
+                            <th style="text-align:center;">P1</th>
+                            <th style="text-align:center;">P2</th>
+                            <th style="text-align:center; color: var(--primary);">EX1</th>
+                            <th style="text-align:center; font-weight:bold; color: var(--primary); background-color: rgba(0,0,0,0.03);">SM1</th>
+                            <th style="text-align:center;">P3</th>
+                            <th style="text-align:center;">P4</th>
+                            <th style="text-align:center; color: var(--primary);">EX2</th>
+                            <th style="text-align:center; font-weight:bold; color: var(--primary); background-color: rgba(0,0,0,0.03);">SM2</th>
+                            <th style="text-align:center; color: var(--success);">Total Annuel</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+    `;
+
+    students.forEach((st, index) => {
+        let periodMoyennes = {};
+        let periodValuesNum = {};
+
+        periods.forEach(pKey => {
+            const isExam = pKey.startsWith("EX");
+            const currentMax = isExam ? maxBulletin * 2 : maxBulletin;
+            const evals = (db.evaluations[activeClass] && db.evaluations[activeClass][pKey]) 
+                ? db.evaluations[activeClass][pKey].filter(ev => !ev.course || ev.course === selectedCourse) 
+                : [];
+
+            let pTotal = 0;
+            let pMaxTotal = 0;
+
+            evals.forEach(ev => {
+                const gradeKey = `${st.id}_${ev.id}`;
+                const gradeVal = db.grades[gradeKey];
+                if (gradeVal !== undefined && gradeVal !== '' && parseFloat(gradeVal) <= parseFloat(ev.max)) {
+                    pTotal += parseFloat(gradeVal);
+                    pMaxTotal += parseFloat(ev.max);
+                }
+            });
+
+            if (pMaxTotal > 0) {
+                const moyP = (pTotal / pMaxTotal) * currentMax;
+                periodMoyennes[pKey] = moyP.toFixed(1);
+                periodValuesNum[pKey] = moyP;
+            } else {
+                periodMoyennes[pKey] = "-";
+                periodValuesNum[pKey] = null;
+            }
+        });
+
+        // --- CALCUL SEMESTRE 1 (P1 + P2 + EX1) ---
+        let sm1Val = 0;
+        let hasSm1 = false;
+        ["P1", "P2", "EX1"].forEach(pKey => {
+            if (periodValuesNum[pKey] !== null) {
+                sm1Val += periodValuesNum[pKey];
+                hasSm1 = true;
+            }
+        });
+
+        // --- CALCUL SEMESTRE 2 (P3 + P4 + EX2) ---
+        let sm2Val = 0;
+        let hasSm2 = false;
+        ["P3", "P4", "EX2"].forEach(pKey => {
+            if (periodValuesNum[pKey] !== null) {
+                sm2Val += periodValuesNum[pKey];
+                hasSm2 = true;
+            }
+        });
+
+        // --- CALCUL TOTAL ANNUEL (SM1 + SM2) ---
+        const totalAnnuelVal = sm1Val + sm2Val;
+        const hasAnnuelData = hasSm1 || hasSm2;
+
+        html += `
+            <tr>
+                <td>${index + 1}</td>
+                <td><strong>${st.name}</strong></td>
+                <td style="text-align:center;">${periodMoyennes["P1"]}</td>
+                <td style="text-align:center;">${periodMoyennes["P2"]}</td>
+                <td style="text-align:center; font-weight:bold; color:var(--primary);">${periodMoyennes["EX1"]}</td>
+                <td style="text-align:center; font-weight:bold; background-color: rgba(0,0,0,0.02);">${hasSm1 ? sm1Val.toFixed(1) : "-"} / ${maxSM1}</td>
+                <td style="text-align:center;">${periodMoyennes["P3"]}</td>
+                <td style="text-align:center;">${periodMoyennes["P4"]}</td>
+                <td style="text-align:center; font-weight:bold; color:var(--primary);">${periodMoyennes["EX2"]}</td>
+                <td style="text-align:center; font-weight:bold; background-color: rgba(0,0,0,0.02);">${hasSm2 ? sm2Val.toFixed(1) : "-"} / ${maxSM2}</td>
+                <td style="text-align:center; font-weight:bold; color:var(--success); font-size:0.95rem;">${hasAnnuelData ? totalAnnuelVal.toFixed(1) : "0.0"} / ${maxAnnuel}</td>
+            </tr>
+        `;
+    });
+
+    html += `</tbody></table></div></div>`;
+    container.innerHTML = html;
 }
 
 function togglePeriodVisibility(pKey) {
@@ -955,6 +1428,11 @@ function addEvaluationColumn(pKey) {
     const maxVal = prompt("Note maximale (ex: 10 ou 20) :", "10");
     if (!maxVal || isNaN(maxVal)) return;
 
+    // 📅 Récupération de la date avec la date du jour pré-remplie par défaut
+    const defaultToday = new Date().toISOString().substring(0, 10);
+    const evalDate = prompt("Date de l'épreuve (AAAA-MM-JJ) :", defaultToday);
+    if (!evalDate) return;
+
     if (!db.evaluations[activeClass]) db.evaluations[activeClass] = {};
     if (!db.evaluations[activeClass][pKey]) db.evaluations[activeClass][pKey] = [];
 
@@ -962,7 +1440,8 @@ function addEvaluationColumn(pKey) {
         id: generateUniqueId("EV"),
         name: evalName.trim(),
         max: parseFloat(maxVal),
-        course: currentCourse // 👈 L'évaluation appartient désormais à un cours précis !
+        date: evalDate.trim(),
+        course: currentCourse
     });
 
     saveDB();
@@ -1069,7 +1548,7 @@ function renderAttendanceList() {
                     <select id="attendance-status-${st.id}" style="padding: 4px; border-radius: 6px;">
                         <option value="P" ${currentStatus === 'P' ? 'selected' : ''}>✅ Présent</option>
                         <option value="A" ${currentStatus === 'A' ? 'selected' : ''}>❌ Absent</option>
-                        <option value="R" ${currentStatus === 'R' ? 'selected' : ''}>🕒 Retard</option>
+                        <option value="R" ${currentStatus === 'R' ? 'selected' : ''}>⚠️ Retard</option>
                     </select>
                 </td>
             </tr>`;
@@ -1354,27 +1833,30 @@ async function syncWithCloud() {
         return;
     }
 
-    const dynamicUrl = SERVER_CONFIG.getInternetUrl(db.user.school);
+    const targetUrl = "https://class-net-p.onrender.com";
     
     try {
-        // Envoi de l'intégralité de la variable 'db' (Base de données entière)
-        const response = await fetch(`${dynamicUrl}/api/cloud/backup`, {
+        const response = await fetch(`${targetUrl}/api/sync/classnet-app`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ 
-                authId: db.user.id, 
-                fullDatabase: db 
-            })
+            body: JSON.stringify(db)
         });
 
-        if (response.ok) {
+        const result = await response.json();
+
+        if (response.ok && result.status) {
             db.pendingCommits = 0;
-            appState.syncHistory.internet.push(Date.now());
+            if (typeof appState !== 'undefined' && appState.syncHistory) {
+                appState.syncHistory.internet.push(Date.now());
+            }
             saveDB();
-            alert(`🚀 Push On (API) réussi ! Base de données sécurisée sur le Cloud Render de l'école.`);
+            alert(`🚀 ${result.message}`);
+        } else {
+            alert(`❌ Erreur du serveur : ${result.message || "Refus de synchronisation."}`);
         }
     } catch (error) {
-        alert("❌ Erreur de synchronisation Cloud. Le serveur Render est peut-être en veille.");
+        alert("❌ Erreur de réseau critique. Assurez-vous que le serveur Render n'est pas en veille.");
+        console.error("Erreur de Push On :", error);
     }
 }
 
@@ -1686,7 +2168,7 @@ Total des points : /${maxScore} points.
 Structure demandée :
 1. En-tête officiel de l'épreuve (Nom de l'élève, Date, Classe, Cours).
 2. 3 à 5 questions très précises et pédagogiques adaptées au programme.
-3. Le barème de cotation détaillé pour chaque question entre parenthèses.`;
+3. Le barème de cotation détaillé pour chaque question entre parenthèses. Ne mets pas de conclusion ni d'introduction.`;
 
     const payload = {
         message: promptText,
@@ -1933,6 +2415,91 @@ async function triggerAdminLock() {
     } else {
         alert("❌ Code incorrect.");
     }
+}
+
+function verifyAndSaveProfile() {
+    const currentPass = db.user.password;
+    db.user.password="123456"
+    const inputPass = prompt("🔒 Sécurité ClassNet : Veuillez entrer votre mot de passe local pour valider les modifications :");
+    
+    if (inputPass === currentPass) {
+        // Enregistrement des anciennes variables
+        db.user.name = document.getElementById('setting-user-name').value;
+        db.user.school = document.getElementById('setting-school-id').value;
+        db.user.password = document.getElementById('setting-user-pass').value;
+        
+        // Enregistrement des nouvelles variables
+        db.user.phone = document.getElementById('setting-user-phone')?.value || "";
+        db.user.age = document.getElementById('setting-user-age')?.value || "";
+        db.user.schoolCode = document.getElementById('setting-school-code')?.value || "";
+        
+        saveDB();
+        updateLoginHeaderButton();
+        alert("✅ Vos informations personnelles ont été mises à jour avec succès !");
+    } else if (inputPass !== null) {
+        alert("❌ Mot de passe incorrect. Les modifications ont été annulées.");
+    }
+}
+
+function updateActiveClassName() {
+    const newName = document.getElementById('edit-class-name').value.trim();
+    if (!newName || newName === activeClass) return;
+    if (db.classes.includes(newName)) {
+        alert("❌ Ce nom de classe existe déjà.");
+        return;
+    }
+    
+    const confirmChange = confirm(`⚠️ Renommer "${activeClass}" en "${newName}" ? Toutes les données liées seront transférées.`);
+    if (!confirmChange) return;
+    
+    // 1. Mise à jour de la liste principale
+    const classIndex = db.classes.indexOf(activeClass);
+    db.classes[classIndex] = newName;
+    
+    // 2. Transfert des objets profonds
+    db.courses[newName] = db.courses[activeClass]; delete db.courses[activeClass];
+    db.students[newName] = db.students[activeClass]; delete db.students[activeClass];
+    db.evaluations[newName] = db.evaluations[activeClass]; delete db.evaluations[activeClass];
+    
+    // 3. Mise à jour des clés combinées (Filtres et Maximas)
+    if (db.activeCourseFilter && db.activeCourseFilter[activeClass]) {
+        db.activeCourseFilter[newName] = db.activeCourseFilter[activeClass];
+        delete db.activeCourseFilter[activeClass];
+    }
+    Object.keys(db.courseMax || {}).forEach(key => {
+        if (key.startsWith(activeClass + '_')) {
+            const newKey = key.replace(activeClass + '_', newName + '_');
+            db.courseMax[newKey] = db.courseMax[key];
+            delete db.courseMax[key];
+        }
+    });
+    
+    // 4. Mise à jour des journaux de présences
+    if (db.presences) {
+        db.presences.forEach(p => { if (p.class === activeClass) p.class = newName; });
+    }
+    
+    activeClass = newName;
+    saveDB();
+    renderClassSelectors();
+    closeEditStudentsModal();
+    alert("✅ Nom de la classe mis à jour avec succès.");
+}
+
+function updateActiveClassCourses() {
+    const coursesStr = document.getElementById('edit-class-courses').value;
+    const newCourses = coursesStr.split(',').map(c => c.trim()).filter(c => c !== "");
+    
+    if(newCourses.length === 0) {
+        alert("⚠️ La classe doit conserver au moins un cours.");
+        return;
+    }
+    
+    db.courses[activeClass] = newCourses;
+    saveDB();
+    renderClassSelectors();
+    renderGradesTables();
+    alert("✅ La liste des cours a été mise à jour.");
 }
 </script>
 </body>
